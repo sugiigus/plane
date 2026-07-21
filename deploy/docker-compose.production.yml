@@ -1,0 +1,27 @@
+# Production overlay for the repository-root docker-compose.yml.
+# Use both files: docker compose -f docker-compose.yml -f deploy/docker-compose.production.yml
+services:
+  web:
+    restart: unless-stopped
+  admin:
+    restart: unless-stopped
+  space:
+    restart: unless-stopped
+  api:
+    restart: unless-stopped
+  worker:
+    restart: unless-stopped
+  beat-worker:
+    restart: unless-stopped
+  live:
+    restart: unless-stopped
+  plane-db:
+    restart: unless-stopped
+  plane-redis:
+    restart: unless-stopped
+  plane-mq:
+    restart: unless-stopped
+  plane-minio:
+    restart: unless-stopped
+  proxy:
+    restart: unless-stopped
