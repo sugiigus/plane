@@ -25,3 +25,11 @@ services:
     restart: unless-stopped
   proxy:
     restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS}
+      CERT_EMAIL: ${CERT_EMAIL}
+      CERT_ACME_CA: ${CERT_ACME_CA}
+      CERT_ACME_DNS: ${CERT_ACME_DNS}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES}
+      FILE_SIZE_LIMIT: ${FILE_SIZE_LIMIT}
+      BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
