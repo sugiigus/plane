@@ -6,7 +6,9 @@
 
 import type { TLanguage, ILanguageOption } from "../types";
 
-export const FALLBACK_LANGUAGE: TLanguage = "en";
+// This self-hosted distribution is operated for a Japanese-speaking organization.
+// Existing users can still choose any supported language in their preferences.
+export const FALLBACK_LANGUAGE: TLanguage = "ja";
 
 export const SUPPORTED_LANGUAGES: ILanguageOption[] = [
   { label: "English", value: "en" },
