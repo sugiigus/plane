@@ -2,9 +2,10 @@
 set -euo pipefail
 
 root_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
-backup_root=${BACKUP_ROOT:-/var/backups/plane-jp}
+backup_root=${BACKUP_ROOT:-"$root_dir/backups"}
 timestamp=$(date +%Y%m%d-%H%M%S)
 backup_dir="$backup_root/$timestamp"
+umask 077
 mkdir -p "$backup_dir"
 cd "$root_dir"
 
@@ -25,7 +26,6 @@ compose=(docker compose -p plane-jp -f docker-compose.yml -f deploy/docker-compo
 docker run --rm -v plane-jp_uploads:/data:ro -v "$backup_dir:/backup" alpine:3.22 \
   tar -C /data -czf /backup/uploads.tar.gz .
 
-umask 077
 cp .env "$backup_dir/root.env"
 cp apps/api/.env "$backup_dir/api.env"
 chmod 600 "$backup_dir/root.env" "$backup_dir/api.env"
