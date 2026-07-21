@@ -16,7 +16,7 @@ services:
   live:
     restart: unless-stopped
     env_file:
-      - ../apps/live/.env
+      - ./apps/live/.env
   plane-db:
     restart: unless-stopped
   plane-redis:
