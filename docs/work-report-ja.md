@@ -1,6 +1,6 @@
 # Plane 日本語版 作業報告
 
-最終更新: 2026-07-22（作業継続前の中間記録）
+最終更新: 2026-07-22（ai-server 稼働確認済み）
 
 ## 実施済み
 
@@ -11,13 +11,17 @@
 - Djangoの既定言語を `ja`、タイムゾーンを `Asia/Tokyo`、新規プロファイルの言語を `ja` に変更し、マイグレーション `0122_profile_default_language_ja.py` を追加した。
 - ホーム／プロフィールの日時を選択中ロケールに追従させ、主要な残存英語ラベルを日本語に補完した。
 - デプロイ、バックアップ、更新、ヘルスチェック、Dockerの送信元制限用スクリプトと運用文書を追加した。
+- `develop` へマージし、`/opt/plane-jp` の `develop` から ai-server にデプロイした。
+- Caddy とリアルタイム通信サービスの実行時環境変数を本番Composeオーバーレイで明示的に渡すよう修正した。
+- `192.168.1.200:8085` を `192.168.1.7` だけに限定し、UFW に加えて Docker の `DOCKER-USER` 規則を systemd で永続化した。
 
 ## サーバー調査結果
 
 - Ubuntu 26.04 LTS、LAN IP `192.168.1.200`、Docker 29.1.3、Docker Compose 利用可。
-- 8085 は未使用。既存公開ポートは 8000、8765、8766、3000、3100であり、停止・変更していない。
-- UFW は有効。`192.168.1.7` 向けの既存限定ルールを確認した。
-- 設計上のPlane URL: `http://192.168.1.200:8085`。ComposeのIPバインドとUFWに加え、`DOCKER-USER` で送信元 `192.168.1.7` だけを許可する。
+- 既存の fxnews 関連コンテナは停止・変更していない。
+- UFW は有効。Plane は `192.168.1.7` からの `192.168.1.200:8085/tcp` だけを許可している。
+- `plane-jp-firewall.service` は有効・稼働中。Docker の公開ポートへの DNAT 後にも `192.168.1.7` 以外を拒否する。
+- 運用URL: `http://192.168.1.200:8085`。
 
 ## 検証結果
 
@@ -32,16 +36,20 @@
 | 全体TypeScript検査               | Windowsのpnpm並列実行／Husky設定ロックで中断（変更箇所外） |
 | ローカルCompose構成検査          | 成功                                                       |
 | ローカルDockerビルド・起動       | 未完了（Docker BuildKit内のAlpine TLS証明書検証に失敗）    |
+| ai-server PostgreSQL             | `pg_isready` と読み取りクエリが成功                        |
+| ai-server DBマイグレーション     | `0122_profile_default_language_ja` を含め完了（exit 0）    |
+| ai-server Plane サービス         | API、Web、Admin、Live、Proxy が稼働                        |
+| 管理用PCからの到達性             | `192.168.1.7` から TCP・HTTP 200 を確認                    |
 
-## 未実施とブロッカー
+## 留意事項
 
 ローカルのDockerビルドは `dl-cdn.alpinelinux.org` の証明書をDocker BuildKitが信頼できず、`apk add` で停止した。TLS検証を無効化して回避しない。Docker Desktopに組織のルートCAを安全に信頼させる、またはネットワーク側のTLS検査を適切に設定する必要がある。
 
-このため、ブラウザでの日本語UI・タスク・コメント・検索確認、Dockerイメージビルド、GitHubへの機能ブランチpush、`develop`へのマージ、Ubuntu本番デプロイ、実アクセス制限の適用は未実施である。認証情報、`.env`、SSH鍵、トークンはGitに追加していない。
+ローカルDocker Desktopの証明書問題は未解消だが、ai-server では安全にビルド・稼働できている。認証情報、`.env`、SSH鍵、トークンはGitに追加していない。
 
-## 今後の手順
+## 初回利用と今後の手順
 
-1. Docker Desktopの信頼ストア問題を解消して `docker compose -f docker-compose-local.yml up -d --build` を再実行する。
-2. 日本語のUI・日本語入力・検索・永続化をブラウザで確認し、lint／型／ビルドを再実行する。
-3. 差分の機密情報検査後、`feature/ja-localization` をcommit・pushし、`develop` へマージする。
-4. Ubuntuの `/opt/plane-jp` に `develop` を配置し、秘密情報をサーバー上で生成してからデプロイ・アクセス制限・ヘルスチェックを実施する。
+1. 管理用PCから `http://192.168.1.200:8085` を開き、初回管理者アカウントとワークスペースを作成する。
+2. 日本語のタスク作成、コメント、検索、リアルタイム更新を実利用で確認する。
+3. 更新時は `/opt/plane-jp/deploy/update.sh` を実行する。実行前に自動バックアップされる。
+4. ローカル開発が必要になった時点で、Docker Desktopの組織CA信頼設定を解消する。

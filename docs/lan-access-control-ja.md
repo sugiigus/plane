@@ -11,4 +11,4 @@ sudo ufw status numbered
 sudo iptables -S DOCKER-USER
 ```
 
-このスクリプトは UFW の送信元限定ルールを追加し、`DOCKER-USER` から専用チェーンへ分岐させて、コンテナのHTTP（DNAT後の80番）を `192.168.1.7` 以外から拒否する。`netfilter-persistent` が未導入なら警告を出すため、再起動後に維持する方法を確認してからインストールする。既存のUFWルールを削除・初期化してはならない。
+このスクリプトは UFW の送信元限定ルールを追加し、`DOCKER-USER` から専用チェーンへ分岐させて、コンテナのHTTP（DNAT後の80番）を `192.168.1.7` 以外から拒否する。さらに `plane-jp-firewall.service` を有効化し、Dockerの再起動およびOS再起動後にもこの規則を復元する。UFW と競合する `iptables-persistent` は導入しない。既存のUFWルールを削除・初期化してはならない。

@@ -1,0 +1,12 @@
+[Unit]
+Description=Restrict Plane Docker HTTP to the main PC
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/plane-jp-firewall
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
